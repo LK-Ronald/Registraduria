@@ -1,0 +1,5 @@
+### Innorar archivos de configuracion del ide
+.vscode
+backups
+
+### Archivos de configuracion de la base de datos
