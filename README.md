@@ -5,7 +5,7 @@ Este proyecto es una aplicacion de consola desarrollada en Java que gestiona una
 ## Tecnologias Utilizadas
 
 - Lenguaje de Programacion: Java
-- Sistema de Gestion de Base de Datos (SGDB): PostgreSQL
+- Sistema de Gestion de Base de Datos (SGDB): PostgreSQL, MySQL
 - Herramientas de Construccion y Gestion de Dependencias: Maven (implícito en la estructura del proyecto)
 
 ## Estructura del Proyecto
@@ -31,10 +31,17 @@ El proyecto sigue una arquitectura organizada para separar las responsabilidades
 
 ## Configuracion de la Base de Datos
 
-Para el correcto funcionamiento del sistema, es necesario configurar la base de datos PostgreSQL.
+Para el correcto funcionamiento del sistema, es necesario configurar la base de datos.
+> [!NOTE]
+> **Versión 2.0.0**: A partir de la versión 2.0.0, el sistema utiliza **MySQL** por defecto.
 
-1. **Script de Inicializacion**: El archivo SQL con las sentencias necesarias para crear la estructura de la base de datos se encuentra en `db_scripts/db.sql`.
-2. **Ejecucion**: Puede ejecutar este script directamente en su servidor PostgreSQL o utilizar la opcion correspondiente desde el menu de la aplicacion si esta configurada para tal fin.
+### MySQL (Por defecto)
+1. **Script de Inicializacion**: El archivo SQL con las sentencias necesarias para crear la estructura de la base de datos se encuentra en `registraduria/src/main/java/com/empresa/registraduria/infraestructura/datos/mysql/scripts/empresa.sql`.
+2. **Ejecucion**: Puede ejecutar este script directamente en su servidor MySQL o utilizar la opcion correspondiente desde el menu de la aplicacion.
+
+### PostgreSQL (Opcional)
+1. **Script de Inicializacion**: `db_scripts/db.sql`.
+2. **Cambiar Motor de Base de Datos**: Para usar PostgreSQL, debe modificar la clase `Main.java` y descomentar la línea que instancia `AccesoDatosImpl` (PostgreSQL) y comentar `AccesoDatosMysqlImpl` (MySQL).
 
 ## Manual de Usuario
 

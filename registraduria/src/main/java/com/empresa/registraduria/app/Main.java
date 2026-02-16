@@ -1,6 +1,8 @@
 package com.empresa.registraduria.app;
 
 import java.util.Scanner;
+
+import com.empresa.registraduria.infraestructura.datos.mysql.AccesoDatosMysqlImpl;
 import com.empresa.registraduria.infraestructura.datos.postgresql.AccesoDatosImpl;
 import com.empresa.registraduria.util.FechaActu;
 import com.empresa.registraduria.dominio.modelo.Persona;
@@ -10,7 +12,8 @@ public class Main {
     public static void main(String[] args) {
         
         Scanner sc = new Scanner(System.in);
-        RegistroPersonasImpl rp = new RegistroPersonasImpl(new AccesoDatosImpl());
+        //RegistroPersonasImpl rp = new RegistroPersonasImpl(new AccesoDatosImpl());
+        RegistroPersonasImpl rp = new RegistroPersonasImpl(new AccesoDatosMysqlImpl());
         int opcion = 0;
 
         while (opcion != 8) {

@@ -1,0 +1,181 @@
+package com.empresa.registraduria.infraestructura.datos.mysql;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.empresa.registraduria.dominio.exepciones.AccesoDatosEx;
+import com.empresa.registraduria.dominio.exepciones.EscrituraDatosEx;
+import com.empresa.registraduria.dominio.modelo.Persona;
+import com.empresa.registraduria.infraestructura.datos.IAccesoDatos;
+import com.empresa.registraduria.util.CargarConfig;
+import com.empresa.registraduria.util.CargarQuery;
+import com.empresa.registraduria.util.FechaActu;
+import com.empresa.registraduria.util.HashPassword;
+
+public class AccesoDatosMysqlImpl implements IAccesoDatos{
+
+    private final String nombreDB = "empresa.usuarios";
+
+    @Override
+    public boolean existe(long nid) throws AccesoDatosEx {
+        String url = "jdbc:mysql://localhost:3306/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        boolean existe = false;
+
+        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ?";
+
+        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
+                PreparedStatement pst = conn.prepareStatement(sql)) {
+
+            pst.setLong(1, nid);
+            try (ResultSet rs = pst.executeQuery()) {
+                existe = rs.next();
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return existe;
+    }
+
+    @Override
+    public void agregar(Persona persona) throws EscrituraDatosEx {
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
+
+        String sql = "INSERT INTO " + nombreDB
+                + " (nid, nombre, apellido, correo, clave, fecha_regis, fecha_naci) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
+                PreparedStatement pst = conn.prepareStatement(sql)) {
+
+            pst.setLong(1, persona.getNid());
+            pst.setString(2, persona.getNombre());
+            pst.setString(3, persona.getApellido());
+            pst.setString(4, persona.getCorreo());
+            pst.setString(5, persona.getClave());
+            pst.setTimestamp(6, FechaActu.getFechaTiempo());
+            pst.setDate(7, FechaActu.valueOf(persona.getAnoNacimiento()));
+
+            int insertRow = pst.executeUpdate();
+            System.out.println("Se insertaron: " + insertRow + " filas");
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
+    public void actualizarClave(long nid, String nuevaClave) throws EscrituraDatosEx {
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
+
+        String sql = "UPDATE " + nombreDB + " SET clave = ? WHERE nid = ?";
+
+        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
+                PreparedStatement pst = conn.prepareStatement(sql)) {
+
+            pst.setString(1, HashPassword.hashpw(nuevaClave));
+            pst.setLong(2, nid);
+
+            int updateRow = pst.executeUpdate();
+
+            if (updateRow == 0) {
+                System.out.println("El numero de identificacion no es valido");
+            } else {
+                System.out.println("Se actualizaron: " + updateRow + " filas");
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
+    public Persona buscar(long nid) throws AccesoDatosEx {
+        Persona persona = null;
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
+
+        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ?";
+
+        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
+                PreparedStatement pst = conn.prepareStatement(sql)) {
+
+            pst.setLong(1, nid);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    persona = new Persona(rs.getLong("nid"), rs.getString("nombre"), rs.getString("apellido"),
+                            rs.getString("correo"), rs.getString("clave"), FechaActu.valueOf(rs.getDate("fecha_naci")));
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return persona;
+    }
+
+    @Override
+    public List<Persona> listar() throws AccesoDatosEx {
+        List<Persona> personas = new ArrayList<>();
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
+
+        String sql = "SELECT * FROM " + nombreDB;
+
+        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
+                PreparedStatement pst = conn.prepareStatement(sql);
+                ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                personas.add(new Persona(rs.getLong("nid"), rs.getString("nombre"), rs.getString("apellido"),
+                        rs.getString("correo"), rs.getString("clave"), FechaActu.valueOf(rs.getDate("fecha_naci"))));
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return personas;
+    }
+
+    @Override
+    public void crear(String nombreDB, String rutaScript) throws AccesoDatosEx {
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
+
+        String sql = CargarQuery.cargarQuery(rutaScript);
+
+        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
+                PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.execute();
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
+    public void borrar(long nid) throws AccesoDatosEx {
+
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
+
+        String sql = "DELETE FROM " + nombreDB + " WHERE nid = ?";
+
+        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
+                PreparedStatement pst = conn.prepareStatement(sql)) {
+
+            pst.setLong(1, nid);
+            pst.execute();
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+}
