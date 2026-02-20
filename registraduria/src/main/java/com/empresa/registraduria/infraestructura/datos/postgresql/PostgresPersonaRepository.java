@@ -15,7 +15,7 @@ public class PostgresPersonaRepository implements PersonaRepository {
     @Override
     public boolean existe(long nid) throws AccesoDatosEx {
         String url = "jdbc:postgresql://localhost:5432/empresa";
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
         boolean existe = false;
 
         String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
@@ -36,7 +36,7 @@ public class PostgresPersonaRepository implements PersonaRepository {
 
     @Override
     public void agregar(Persona persona) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
         String url = "jdbc:postgresql://localhost:5432/empresa";
 
         String sql = "INSERT INTO " + nombreDB
@@ -63,7 +63,7 @@ public class PostgresPersonaRepository implements PersonaRepository {
 
     @Override
     public void actualizarClave(long nid, String nuevaClave) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
         String url = "jdbc:postgresql://localhost:5432/empresa";
 
         String sql = "UPDATE " + nombreDB + " SET clave = ? WHERE nid = ? AND activo = true";
@@ -90,7 +90,7 @@ public class PostgresPersonaRepository implements PersonaRepository {
     @Override
     public Persona buscar(long nid) throws AccesoDatosEx {
         Persona persona = null;
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
         String url = "jdbc:postgresql://localhost:5432/empresa";
 
         String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
@@ -115,7 +115,7 @@ public class PostgresPersonaRepository implements PersonaRepository {
     @Override
     public List<Persona> listar() throws AccesoDatosEx {
         List<Persona> personas = new ArrayList<>();
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
         String url = "jdbc:postgresql://localhost:5432/empresa";
 
         String sql = "SELECT * FROM " + nombreDB + " WHERE activo = true";
@@ -137,7 +137,7 @@ public class PostgresPersonaRepository implements PersonaRepository {
 
     @Override
     public void crear(String nombreDB, String rutaScript) throws AccesoDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
         String url = "jdbc:postgresql://localhost:5432/empresa";
 
         String sql = CargarQuery.cargarQuery(rutaScript);
@@ -154,7 +154,7 @@ public class PostgresPersonaRepository implements PersonaRepository {
     @Override
     public void borrar(long nid) throws AccesoDatosEx {
 
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
         String url = "jdbc:postgresql://localhost:5432/empresa";
 
         String sql = "UPDATE " + nombreDB + " SET activo = false WHERE nid = ?";

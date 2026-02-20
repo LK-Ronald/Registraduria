@@ -12,8 +12,8 @@ public class Main {
     public static void main(String[] args) {
         
         Scanner sc = new Scanner(System.in);
-        RegistroPersonasImpl rp = new RegistroPersonasImpl(new PostgresPersonaRepository());
-        //RegistroPersonasImpl rp = new RegistroPersonasImpl(new AccesoDatosMysqlImpl());
+        //RegistroPersonasImpl rp = new RegistroPersonasImpl(new PostgresPersonaRepository());
+        RegistroPersonasImpl rp = new RegistroPersonasImpl(new MysqlPersonaRepository());
         int opcion = 0;
 
         while (opcion != 8) {

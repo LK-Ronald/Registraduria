@@ -26,7 +26,7 @@ public class MysqlPersonaRepository implements PersonaRepository{
         CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
         boolean existe = false;
 
-        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ?";
+        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
 
         try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
                 PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -74,7 +74,7 @@ public class MysqlPersonaRepository implements PersonaRepository{
         CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
         String url = "jdbc:mysql://localhost:3306/empresa";
 
-        String sql = "UPDATE " + nombreDB + " SET clave = ? WHERE nid = ?";
+        String sql = "UPDATE " + nombreDB + " SET clave = ? WHERE nid = ? AND activo = true";
 
         try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
                 PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -101,7 +101,7 @@ public class MysqlPersonaRepository implements PersonaRepository{
         CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
         String url = "jdbc:mysql://localhost:3306/empresa";
 
-        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ?";
+        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
 
         try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
                 PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -126,7 +126,7 @@ public class MysqlPersonaRepository implements PersonaRepository{
         CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
         String url = "jdbc:mysql://localhost:3306/empresa";
 
-        String sql = "SELECT * FROM " + nombreDB;
+        String sql = "SELECT * FROM " + nombreDB + " WHERE activo = true";
 
         try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
                 PreparedStatement pst = conn.prepareStatement(sql);
@@ -165,7 +165,7 @@ public class MysqlPersonaRepository implements PersonaRepository{
         CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
         String url = "jdbc:mysql://localhost:3306/empresa";
 
-        String sql = "DELETE FROM " + nombreDB + " WHERE nid = ?";
+        String sql = "UPDATE " + nombreDB + " SET activo = false WHERE nid = ? AND activo = true";
 
         try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
                 PreparedStatement pst = conn.prepareStatement(sql)) {
