@@ -4,7 +4,7 @@ import java.util.List;
 import com.empresa.registraduria.dominio.exepciones.*;
 import com.empresa.registraduria.dominio.modelo.Persona;
 
-public interface IAccesoDatos {
+public interface PersonaRepository {
 
     public abstract boolean existe(long nid) throws AccesoDatosEx;
 

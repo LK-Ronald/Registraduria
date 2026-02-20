@@ -1,21 +1,29 @@
-package com.empresa.registraduria.infraestructura.datos.postgresql;
+package com.empresa.registraduria.infraestructura.datos.mysql;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import com.empresa.registraduria.dominio.exepciones.*;
+
+import com.empresa.registraduria.dominio.exepciones.AccesoDatosEx;
+import com.empresa.registraduria.dominio.exepciones.EscrituraDatosEx;
 import com.empresa.registraduria.dominio.modelo.Persona;
-import com.empresa.registraduria.infraestructura.datos.IAccesoDatos;
-import com.empresa.registraduria.util.*;
-import java.sql.*;
+import com.empresa.registraduria.infraestructura.datos.PersonaRepository;
+import com.empresa.registraduria.util.CargarConfig;
+import com.empresa.registraduria.util.CargarQuery;
+import com.empresa.registraduria.util.FechaActu;
+import com.empresa.registraduria.util.HashPassword;
 
-public class AccesoDatosImpl implements IAccesoDatos {
+public class MysqlPersonaRepository implements PersonaRepository{
 
-    private final String nombreDB = "acceso.tb_usuarios";
+    private final String nombreDB = "empresa.usuarios";
 
     @Override
     public boolean existe(long nid) throws AccesoDatosEx {
-        String url = "jdbc:postgresql://localhost:5432/empresa";
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
         boolean existe = false;
 
         String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ?";
@@ -36,8 +44,8 @@ public class AccesoDatosImpl implements IAccesoDatos {
 
     @Override
     public void agregar(Persona persona) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
 
         String sql = "INSERT INTO " + nombreDB
                 + " (nid, nombre, apellido, correo, clave, fecha_regis, fecha_naci) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -63,8 +71,8 @@ public class AccesoDatosImpl implements IAccesoDatos {
 
     @Override
     public void actualizarClave(long nid, String nuevaClave) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
 
         String sql = "UPDATE " + nombreDB + " SET clave = ? WHERE nid = ?";
 
@@ -90,8 +98,8 @@ public class AccesoDatosImpl implements IAccesoDatos {
     @Override
     public Persona buscar(long nid) throws AccesoDatosEx {
         Persona persona = null;
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
 
         String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ?";
 
@@ -115,8 +123,8 @@ public class AccesoDatosImpl implements IAccesoDatos {
     @Override
     public List<Persona> listar() throws AccesoDatosEx {
         List<Persona> personas = new ArrayList<>();
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
 
         String sql = "SELECT * FROM " + nombreDB;
 
@@ -137,8 +145,8 @@ public class AccesoDatosImpl implements IAccesoDatos {
 
     @Override
     public void crear(String nombreDB, String rutaScript) throws AccesoDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
 
         String sql = CargarQuery.cargarQuery(rutaScript);
 
@@ -154,8 +162,8 @@ public class AccesoDatosImpl implements IAccesoDatos {
     @Override
     public void borrar(long nid) throws AccesoDatosEx {
 
-        CargarConfig cg = new CargarConfig("registraduria/config/demo.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        String url = "jdbc:mysql://localhost:3306/empresa";
 
         String sql = "DELETE FROM " + nombreDB + " WHERE nid = ?";
 
@@ -169,5 +177,5 @@ public class AccesoDatosImpl implements IAccesoDatos {
             System.out.println(e.getMessage());
         }
     }
-
+    
 }

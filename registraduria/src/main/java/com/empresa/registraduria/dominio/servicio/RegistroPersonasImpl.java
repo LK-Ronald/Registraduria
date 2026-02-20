@@ -5,13 +5,13 @@ import java.util.List;
 import com.empresa.registraduria.dominio.exepciones.AccesoDatosEx;
 import com.empresa.registraduria.dominio.modelo.Persona;
 import com.empresa.registraduria.dominio.puerto.IRegistroPersonas;
-import com.empresa.registraduria.infraestructura.datos.IAccesoDatos;
+import com.empresa.registraduria.infraestructura.datos.PersonaRepository;
 
 public class RegistroPersonasImpl implements IRegistroPersonas {
 
-    private final IAccesoDatos accesoDatos;
+    private final PersonaRepository accesoDatos;
 
-    public RegistroPersonasImpl(IAccesoDatos dataBase) {
+    public RegistroPersonasImpl(PersonaRepository dataBase) {
         this.accesoDatos = dataBase;
     }
 

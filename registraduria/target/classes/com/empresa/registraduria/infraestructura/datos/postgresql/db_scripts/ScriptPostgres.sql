@@ -82,9 +82,3 @@ ALTER SCHEMA acceso OWNER TO empresa_owner;
 ALTER SCHEMA logs OWNER TO empresa_owner;
 ALTER TABLE acceso.tb_usuarios OWNER TO empresa_owner;
 ALTER TABLE logs.tb_registros_cambios OWNER TO empresa_owner;
-
----Insert de prueba
-INSERT INTO acceso.tb_usuarios(nid, nombre, apellido, correo, clave, fecha_regis, fecha_naci) 
-	VALUES(12345,'Ronald', 'David', 'ronalddavid@gmail.com', 'mi_clave',CURRENT_TIMESTAMP, NOW());
-
-
