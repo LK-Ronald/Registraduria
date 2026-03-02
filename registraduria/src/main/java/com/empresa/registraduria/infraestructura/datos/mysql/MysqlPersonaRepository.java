@@ -1,181 +1,151 @@
 package com.empresa.registraduria.infraestructura.datos.mysql;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.empresa.registraduria.dominio.exepciones.AccesoDatosEx;
 import com.empresa.registraduria.dominio.exepciones.EscrituraDatosEx;
 import com.empresa.registraduria.dominio.modelo.Persona;
 import com.empresa.registraduria.infraestructura.datos.PersonaRepository;
-import com.empresa.registraduria.util.CargarConfig;
-import com.empresa.registraduria.util.CargarQuery;
-import com.empresa.registraduria.util.FechaActu;
-import com.empresa.registraduria.util.HashPassword;
+import jakarta.persistence.*;
 
-public class MysqlPersonaRepository implements PersonaRepository{
+public class MysqlPersonaRepository implements PersonaRepository {
 
-    private final String nombreDB = "empresa.usuarios";
+    private final static EntityManagerFactory emf = Persistence.createEntityManagerFactory("MiEmpresa");
 
     @Override
     public boolean existe(long nid) throws AccesoDatosEx {
-        String url = "jdbc:mysql://localhost:3306/empresa";
-        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
+        if (nid <= 0) {
+            throw new AccesoDatosEx("El numero de identificacion no es valido");
+        }
+        EntityManager em = emf.createEntityManager();
         boolean existe = false;
 
-        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-
-            pst.setLong(1, nid);
-            try (ResultSet rs = pst.executeQuery()) {
-                existe = rs.next();
+        try {
+            Persona p = em.find(Persona.class, nid);
+            if (p != null && p.isActivo()) {
+                existe = true;
             }
-
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            em.close();
         }
         return existe;
     }
 
     @Override
     public void agregar(Persona persona) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
-        String url = "jdbc:mysql://localhost:3306/empresa";
-
-        String sql = "INSERT INTO " + nombreDB
-                + " (nid, nombre, apellido, correo, clave, fecha_regis, fecha_naci) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-
-            pst.setLong(1, persona.getNid());
-            pst.setString(2, persona.getNombre());
-            pst.setString(3, persona.getApellido());
-            pst.setString(4, persona.getCorreo());
-            pst.setString(5, persona.getClave());
-            pst.setTimestamp(6, FechaActu.getFechaTiempo());
-            pst.setDate(7, FechaActu.valueOf(persona.getAnoNacimiento()));
-
-            int insertRow = pst.executeUpdate();
-            System.out.println("Se insertaron: " + insertRow + " filas");
-
+        if (persona == null) {
+            throw new EscrituraDatosEx("La persona no se puede agregar");
+        }
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(persona);
+            em.getTransaction().commit();
+            System.out.println("Persona agregada correctamente");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+            throw new EscrituraDatosEx("Error al agregar persona: " + e.getMessage());
+        } finally {
+            em.close();
         }
     }
 
     @Override
     public void actualizarClave(long nid, String nuevaClave) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
-        String url = "jdbc:mysql://localhost:3306/empresa";
+        if (nid <= 0) {
+            throw new EscrituraDatosEx("El numero de identificacion no es valido");
+        }
+        if (nuevaClave == null || nuevaClave.isEmpty()) {
+            throw new EscrituraDatosEx("La clave no puede ser null o vacia");
+        }
 
-        String sql = "UPDATE " + nombreDB + " SET clave = ? WHERE nid = ? AND activo = true";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-
-            pst.setString(1, HashPassword.hashpw(nuevaClave));
-            pst.setLong(2, nid);
-
-            int updateRow = pst.executeUpdate();
-
-            if (updateRow == 0) {
-                System.out.println("El numero de identificacion no es valido");
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            Persona p = em.find(Persona.class, nid);
+            if (p != null && p.isActivo()) {
+                p.setClave(nuevaClave);
+                em.merge(p);
+                em.getTransaction().commit();
+                System.out.println("Clave actualizada correctamente");
             } else {
-                System.out.println("Se actualizaron: " + updateRow + " filas");
+                throw new EscrituraDatosEx("No se encontró la persona con NID: " + nid);
             }
-
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+            throw new EscrituraDatosEx("Error al actualizar clave: " + e.getMessage());
+        } finally {
+            em.close();
         }
     }
 
     @Override
     public Persona buscar(long nid) throws AccesoDatosEx {
-        Persona persona = null;
-        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
-        String url = "jdbc:mysql://localhost:3306/empresa";
-
-        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-
-            pst.setLong(1, nid);
-            try (ResultSet rs = pst.executeQuery()) {
-                while (rs.next()) {
-                    persona = new Persona(rs.getLong("nid"), rs.getString("nombre"), rs.getString("apellido"),
-                            rs.getString("correo"), rs.getString("clave"), FechaActu.valueOf(rs.getDate("fecha_naci")));
-                }
-            }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        if (nid <= 0) {
+            throw new AccesoDatosEx("El numero de identificacion no es valido");
         }
-        return persona;
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.find(Persona.class, nid);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AccesoDatosEx("Error al buscar persona: " + e.getMessage());
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public List<Persona> listar() throws AccesoDatosEx {
         List<Persona> personas = new ArrayList<>();
-        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
-        String url = "jdbc:mysql://localhost:3306/empresa";
-
-        String sql = "SELECT * FROM " + nombreDB + " WHERE activo = true";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql);
-                ResultSet rs = pst.executeQuery()) {
-
-            while (rs.next()) {
-                personas.add(new Persona(rs.getLong("nid"), rs.getString("nombre"), rs.getString("apellido"),
-                        rs.getString("correo"), rs.getString("clave"), FechaActu.valueOf(rs.getDate("fecha_naci"))));
-            }
-
+        EntityManager em = emf.createEntityManager();
+        try {
+            personas = em.createQuery("SELECT p FROM Persona p WHERE p.activo = true", Persona.class)
+                    .getResultList();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
+            throw new AccesoDatosEx("Error al listar personas: " + e.getMessage());
+        } finally {
+            em.close();
         }
         return personas;
     }
 
     @Override
-    public void crear(String nombreDB, String rutaScript) throws AccesoDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
-        String url = "jdbc:mysql://localhost:3306/empresa";
-
-        String sql = CargarQuery.cargarQuery(rutaScript);
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-            pst.execute();
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+    public void crear() throws AccesoDatosEx {
+        System.out.println("La base de datos se creo exitosamente");
     }
 
     @Override
     public void borrar(long nid) throws AccesoDatosEx {
-
-        CargarConfig cg = new CargarConfig("registraduria/config/mysql.properties");
-        String url = "jdbc:mysql://localhost:3306/empresa";
-
-        String sql = "UPDATE " + nombreDB + " SET activo = false WHERE nid = ? AND activo = true";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-
-            pst.setLong(1, nid);
-            pst.execute();
-
+        if (nid <= 0) {
+            throw new AccesoDatosEx("El numero de identificacion no es valido");
+        }
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            Persona p = em.find(Persona.class, nid);
+            if (p != null && p.isActivo()) {
+                p.setActivo(false);
+                em.merge(p);
+                em.getTransaction().commit();
+            }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+            throw new AccesoDatosEx("Error al borrar persona: " + e.getMessage());
+        } finally {
+            em.close();
         }
     }
-    
 }

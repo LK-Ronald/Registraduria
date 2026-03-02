@@ -2,9 +2,9 @@ CREATE DATABASE IF NOT EXISTS empresa;
 
 USE empresa;
 
-CREATE TABLE IF NOT EXISTS empresa.usuarios(
-	codigo INT UNSIGNED AUTO_INCREMENT,
-    nid INT UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS empresa.tb_usuarios(
+    nid INT NOT NULL,
+    codigo INT UNSIGNED AUTO_INCREMENT UNIQUE,
     nombre VARCHAR(30) NOT NULL,
     apellido VARCHAR(30) NOT NULL,
     correo VARCHAR(50) NOT NULL,
@@ -12,8 +12,9 @@ CREATE TABLE IF NOT EXISTS empresa.usuarios(
     fecha_naci DATE NOT NULL, -- Agregar indice si es necesario
     activo BOOLEAN DEFAULT TRUE NOT NULL, -- 1 Es true, 0 es false
     fecha_regis TIMESTAMP NOT NULL, -- Agregar indice si es necesario
-    CONSTRAINT pk_usuarios_codigo PRIMARY KEY(codigo),
-    CONSTRAINT idx_unique_correo UNIQUE (correo) -- Para evitar correos duplicados
+    CONSTRAINT pk_usuarios_nid PRIMARY KEY(nid),
+    CONSTRAINT idx_unique_correo UNIQUE (correo), -- Para evitar correos duplicados
+    CONSTRAINT idx_unique_nid UNIQUE (nid) -- Para evitar nids duplicados
 );
 
 CREATE TABLE IF NOT EXISTS empresa.logs_registros(
@@ -32,7 +33,7 @@ CREATE TABLE IF NOT EXISTS empresa.logs_registros(
 -- Cuando se cambia la clave se guarda en la tabla logs_cambios o cuando se cambie el correo
 DELIMITER $$
 CREATE TRIGGER after_update_usuario_audit
-AFTER UPDATE ON empresa.usuarios
+AFTER UPDATE ON empresa.tb_usuarios
 FOR EACH ROW
 BEGIN
 	DECLARE v_mensaje VARCHAR(60);

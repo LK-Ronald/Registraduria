@@ -1,64 +1,65 @@
-# MiniProyecto - Sistema de Gestion de Registraduria
+# MiniProyecto - Sistema de Gestión de Registraduría (v4.0.0)
 
-Este proyecto es una aplicacion de consola desarrollada en Java que gestiona una base de datos de personas para una entidad de registraduria. Utiliza PostgreSQL como sistema de gestion de bases de datos.
+Este es un sistema de gestión de personas desarrollado en **Java**, diseñado bajo principios de **Arquitectura Limpia (Hexagonal)** y utilizando **JPA con Hibernate** para una persistencia robusta y flexible. El sistema soporta tanto **MySQL** como **PostgreSQL**.
 
-## Tecnologias Utilizadas
+## 🚀 Tecnologías y Herramientas
 
-- Lenguaje de Programacion: Java
-- Sistema de Gestion de Base de Datos (SGDB): PostgreSQL, MySQL
-- Herramientas de Construccion y Gestion de Dependencias: Maven (implícito en la estructura del proyecto)
+- **Java 21**: Lenguaje principal.
+- **Jakarta Persistence API (JPA) 4.0**: Estándar de persistencia.
+- **Hibernate 8.0 (Alpha)**: Proveedor de persistencia (ORM).
+- **PostgreSQL 42.7 / MySQL 9.6**: Motores de base de datos soportados.
+- **Spring Security (Crypto)**: Utilizado para el hasheo seguro de contraseñas (BCrypt).
+- **Maven**: Gestión de dependencias y construcción.
 
-## Estructura del Proyecto
+## 🏗️ Arquitectura del Proyecto
 
-El proyecto sigue una arquitectura organizada para separar las responsabilidades, facilitando el mantenimiento y la escalabilidad. A continuacion se detalla la estructura principal de paquetes:
+El proyecto sigue una estructura de capas para garantizar el desacoplamiento y la mantenibilidad:
 
-- **com.empresa.registraduria.app**
-  - Contiene la clase `Main.java`, que es el punto de entrada de la aplicacion y maneja la interaccion con el usuario a traves de un menu en consola.
+- **`com.empresa.registraduria.dominio`**:
+    - **`modelo`**: Contiene la entidad `Persona`, diseñada como un POJO (Plain Old Java Object) puro, sin lógica de infraestructura.
+    - **`servicio`**: Capa donde reside la lógica de negocio (ej. hasheo de contraseñas mediante `RegistroPersonasImpl`).
+    - **`puerto`**: Interfaces que definen los contratos (`PersonaRepository`).
+- **`com.empresa.registraduria.infraestructura`**:
+    - **`datos`**: Implementaciones de persistencia (`MysqlPersonaRepository`, `PostgresPersonaRepository`) utilizando JPA.
+- **`com.empresa.registraduria.app`**: Punto de entrada con el menú interactivo (`Main.java`).
 
-- **com.empresa.registraduria.dominio**
-  - Nucleo de la logica de negocio.
-  - **modelo**: Define las entidades del dominio, como la clase `Persona`.
-  - **puerto**: Interfaces que definen los contratos para los servicios y repositorios, como `IRegistroPersonas`.
-  - **servicio**: Implementaciones concretas de la logica de negocio, como `RegistroPersonasImpl`.
-  - **exepciones**: Excepciones personalizadas para el manejo de errores especificos del dominio.
+## ⚙️ Configuración y Despliegue
 
-- **com.empresa.registraduria.infraestructura**
-  - Capa encargada de la persistencia y acceso a datos.
-  - **datos**: Implementaciones para el acceso a la base de datos (PostgreSQL, MySQL, Archivos), gestionada a traves de interfaces como `IAccesoDatos`.
+### 1. Requisitos Previos
+- Tener instalado JDK 17 o superior.
+- Tener instalado Maven.
+- Contar con una instancia de MySQL o PostgreSQL activa.
 
-- **com.empresa.registraduria.util**
-  - Clases de utilidad transversal, como `FechaActu` para manejo de fechas y `HashPassword` para seguridad.
+### 2. Configuración de la Base de Datos
+El sistema utiliza el archivo `src/main/resources/META-INF/persistence.xml` para gestionar la conexión.
 
-## Configuracion de la Base de Datos
+#### Para usar PostgreSQL (Configuración por defecto en el código):
+1. Asegúrate de que el archivo `persistence.xml` tenga activa la sección de PostgreSQL.
+2. Ejecuta el script de inicialización: `src/main/java/com/empresa/registraduria/infraestructura/datos/postgresql/db_scripts/ScriptPostgres.sql`.
 
-Para el correcto funcionamiento del sistema, es necesario configurar la base de datos.
-> [!NOTE]
-> **Versión 2.0.0**: A partir de la versión 2.0.0, el sistema utiliza **MySQL** por defecto.
+#### Para usar MySQL:
+1. Cambia la configuración en `persistence.xml` para apuntar al driver y URL de MySQL.
+2. Ejecuta el script de inicialización: `src/main/java/com/empresa/registraduria/infraestructura/datos/mysql/scripts/ScriptMysql.sql`.
+3. En la clase `Main.java`, asegúrate de instanciar `MysqlPersonaRepository`.
 
-### MySQL (Por defecto)
-1. **Script de Inicializacion**: El archivo SQL con las sentencias necesarias para crear la estructura de la base de datos se encuentra en `registraduria/src/main/java/com/empresa/registraduria/infraestructura/datos/mysql/scripts/empresa.sql`.
-2. **Ejecucion**: Puede ejecutar este script directamente en su servidor MySQL o utilizar la opcion correspondiente desde el menu de la aplicacion.
+> [!IMPORTANT]
+> Gracias a Hibernate (`hibernate.hbm2ddl.auto = update`), las tablas se crearán o actualizarán automáticamente al iniciar la aplicación si la base de datos ya existe.
 
-### PostgreSQL (Opcional)
-1. **Script de Inicializacion**: `db_scripts/db.sql`.
-2. **Cambiar Motor de Base de Datos**: Para usar PostgreSQL, debe modificar la clase `Main.java` y descomentar la línea que instancia `AccesoDatosImpl` (PostgreSQL) y comentar `AccesoDatosMysqlImpl` (MySQL).
+### 3. Ejecución
+Para compilar y ejecutar el proyecto desde la terminal:
+```bash
+mvn compile exec:java -Dexec.mainClass="com.empresa.registraduria.app.Main"
+```
 
-## Manual de Usuario
+## 🛠️ Manual de Usuario
 
-Al iniciar la aplicacion, se presentara un menu con las siguientes opciones para gestionar el registro de personas:
+El sistema ofrece las siguientes funcionalidades:
+1. **Crear base de datos**: Mensaje informativo sobre la gestión automática de JPA.
+2. **Agregar persona**: Registro completo con validación y hasheo de clave.
+3. **Buscar persona**: Consulta por NID.
+4. **Listar personas**: Visualización de todos los registros activos.
+5. **Borrar persona**: Eliminación lógica (marcado como inactivo).
+6. **Actualizar clave**: Cambio seguro de contraseña.
+7. **Existe persona**: Validación rápida de existencia.
 
-1. **Crear base de datos**: Ejecuta el script de configuracion inicial para preparar la base de datos.
-2. **Agregar persona**: Permite registrar una nueva persona ingresando su NID, nombre, apellido, correo, clave y fecha de nacimiento.
-3. **Buscar persona**: Busca y muestra la informacion de una persona especificando su numero de identificacion (NID).
-4. **Listar personas**: Muestra una lista completa de todas las personas registradas en el sistema.
-5. **Borrar persona**: Elimina el registro de una persona dado su NID.
-6. **Actualizar clave**: Permite cambiar la contrasena de una persona registrada.
-7. **Existe persona**: Verifica si un NID especifico ya se encuentra registrado en el sistema.
-8. **Salir**: Cierra la aplicacion.
-
-## Notas Tecnicas
-
-- **Seguridad**: Las contrasenas de los usuarios son almacenadas de forma segura utilizando algoritmos de hashing.
-- **Manejo de Fechas**: El sistema utiliza `LocalDate` para el manejo preciso de fechas de nacimiento.
-- **Arquitectura**: El diseno desacopla la logica de negocio de la implementacion de base de datos, permit
-iendo cambiar el motor de persistencia con un impacto minimo en el codigo del dominio.
+---

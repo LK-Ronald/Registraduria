@@ -12,8 +12,8 @@ public class Main {
     public static void main(String[] args) {
         
         Scanner sc = new Scanner(System.in);
-        //RegistroPersonasImpl rp = new RegistroPersonasImpl(new PostgresPersonaRepository());
-        RegistroPersonasImpl rp = new RegistroPersonasImpl(new MysqlPersonaRepository());
+        RegistroPersonasImpl rp = new RegistroPersonasImpl(new PostgresPersonaRepository());
+        //RegistroPersonasImpl rp = new RegistroPersonasImpl(new MysqlPersonaRepository()); 
         int opcion = 0;
 
         while (opcion != 8) {
@@ -32,7 +32,7 @@ public class Main {
             switch (opcion) {
                 case 1:
                     System.out.println("Creando base de datos...");
-                    rp.crear("empresa", "registraduria/db_scripts/empresa.sql");
+                    rp.crear();
                     System.out.println("Base de datos creada exitosamente");
                     break;
 
@@ -62,11 +62,9 @@ public class Main {
                     String fechaNacimiento = sc.next();
                     sc.nextLine();
 
-                    Persona persona = new Persona(nid, nombre, apellido, correo, clave,
-                            FechaActu.parseFecha(fechaNacimiento));
+                    Persona persona = new Persona(nid, nombre, apellido, correo, clave, FechaActu.parseFecha(fechaNacimiento));
 
                     rp.agregar(persona);
-                    System.out.println("Persona agregada exitosamente");
                     break;
 
                 case 3:
@@ -88,8 +86,8 @@ public class Main {
                     long nidBor = sc.nextLong();
                     sc.nextLine();
 
-                    System.out.println("Borrando persona...");
                     rp.borrar(nidBor);
+                    System.out.println("Borrando persona...");
                     break;
 
                 case 6:
@@ -102,7 +100,6 @@ public class Main {
                     sc.nextLine();
 
                     rp.actualizarClave(nidAct, nuevaClave);
-                    System.out.println("Clave actualizada exitosamente");
                     break;
 
                 case 7:
@@ -123,6 +120,5 @@ public class Main {
         }
 
         sc.close();
-        
     }
 }

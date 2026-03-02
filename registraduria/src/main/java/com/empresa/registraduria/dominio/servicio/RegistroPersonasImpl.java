@@ -6,6 +6,7 @@ import com.empresa.registraduria.dominio.exepciones.AccesoDatosEx;
 import com.empresa.registraduria.dominio.modelo.Persona;
 import com.empresa.registraduria.dominio.puerto.IRegistroPersonas;
 import com.empresa.registraduria.infraestructura.datos.PersonaRepository;
+import com.empresa.registraduria.util.HashPassword;
 
 public class RegistroPersonasImpl implements IRegistroPersonas {
 
@@ -16,22 +17,24 @@ public class RegistroPersonasImpl implements IRegistroPersonas {
     }
 
     @Override
-    public void actualizarClave(long nid, String nuevaClave) {
+    public void agregar(Persona persona) {
         try {
-            accesoDatos.actualizarClave(nid, nuevaClave);
+            if (persona.getClave() != null && !persona.getClave().startsWith("$2a$")) {
+                persona.setClave(HashPassword.hashpw(persona.getClave()));
+            }
+            accesoDatos.agregar(persona);
         } catch (AccesoDatosEx e) {
-            System.out.println("Error al actualizar la clave");
-            System.out.println(e.getMessage());
+            System.out.println("Error al agregar la persona");
         }
     }
 
     @Override
-    public void agregar(Persona persona) {
+    public void actualizarClave(long nid, String nuevaClave) {
         try {
-            accesoDatos.agregar(persona);
+            String hashedClave = HashPassword.hashpw(nuevaClave);
+            accesoDatos.actualizarClave(nid, hashedClave);
         } catch (AccesoDatosEx e) {
-            System.out.println("Error al agregar la persona");
-            System.out.println(e.getMessage());
+            System.out.println("Error al actualizar la clave");
         }
     }
 
@@ -41,48 +44,41 @@ public class RegistroPersonasImpl implements IRegistroPersonas {
             accesoDatos.borrar(nid);
         } catch (AccesoDatosEx e) {
             System.out.println("Error al borrar la persona");
-            System.out.println(e.getMessage());
         }
+
     }
 
     @Override
     public void buscar(long nid) {
         try {
-            Persona persona = accesoDatos.buscar(nid);
-            if (persona != null) {
-                System.out.println(persona);
-            } else {
-                System.out.println("Persona no encontrada");
-            }
+            Persona p = accesoDatos.buscar(nid);
+            System.out.println(p);
         } catch (AccesoDatosEx e) {
             System.out.println("Error al buscar la persona");
-            System.out.println(e.getMessage());
         }
     }
 
     @Override
-    public void crear(String nombreDB, String rutaScript) {
+    public void crear() {
         try {
-            accesoDatos.crear(nombreDB, RUTASCRIPT);
+            accesoDatos.crear();
         } catch (AccesoDatosEx e) {
             System.out.println("Error al crear la base de datos");
-            System.out.println(e.getMessage());
         }
     }
 
     @Override
     public void existe(long nid) {
         try {
-            boolean existe = accesoDatos.existe(nid);
-            if (existe) {
+            if (accesoDatos.existe(nid)) {
                 System.out.println("La persona existe");
             } else {
                 System.out.println("La persona no existe");
             }
         } catch (AccesoDatosEx e) {
-            System.out.println("Error al verificar la existencia de la persona");
-            System.out.println(e.getMessage());
+            System.out.println("Error al verificar si existe la persona");
         }
+
     }
 
     @Override
@@ -94,7 +90,6 @@ public class RegistroPersonasImpl implements IRegistroPersonas {
             }
         } catch (AccesoDatosEx e) {
             System.out.println("Error al listar las personas");
-            System.out.println(e.getMessage());
         }
     }
 

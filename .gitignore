@@ -1,5 +1,8 @@
 ### Innorar archivos de configuracion del ide
+.gitignore
 .vscode
 backups
+registraduria/src/main/java/com/empresa/registraduria/app/Principal.java
+
 
 ### Archivos de configuracion de la base de datos

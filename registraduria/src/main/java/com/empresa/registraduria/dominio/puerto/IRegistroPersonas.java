@@ -4,8 +4,6 @@ import com.empresa.registraduria.dominio.modelo.Persona;
 
 public interface IRegistroPersonas {
     
-    final String RUTASCRIPT = "registraduria/db_scripts/empresa.sql";
-
     public abstract void existe(long nid);
 
     public abstract void agregar(Persona persona);
@@ -16,7 +14,7 @@ public interface IRegistroPersonas {
 
     public abstract void listar();
 
-    public abstract void crear(String nombreDB, String rutaScript);
+    public abstract void crear();
 
     public abstract void borrar(long nid);
 }

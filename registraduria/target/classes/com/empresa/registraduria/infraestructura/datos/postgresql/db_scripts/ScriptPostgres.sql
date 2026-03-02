@@ -13,8 +13,8 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 --- Crear la tabla usuarios
 CREATE TABLE IF NOT EXISTS acceso.tb_usuarios(
-	codigo INT GENERATED ALWAYS AS IDENTITY,
-	nid INT NOT NULL CONSTRAINT idx_unique_nid UNIQUE,
+	nid INT NOT NULL,
+	codigo INT GENERATED ALWAYS AS IDENTITY UNIQUE,,
 	nombre VARCHAR(30) NOT NULL,
 	apellido VARCHAR(30) NOT NULL,
 	correo VARCHAR(50) NOT NULL CONSTRAINT idx_unique_correo UNIQUE, --- Para evitar correos duplicados
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS acceso.tb_usuarios(
 	fecha_naci DATE NOT NULL, -- Agregar un indice si es necesario
 	activo BOOLEAN DEFAULT TRUE NOT NULL, -- Mientras la persona este activa con valor por defecto 'true'
 	fecha_regis TIMESTAMP NOT NULL, -- Agregar un indice si es necesario
-	CONSTRAINT pk_usuarios_codigo PRIMARY KEY(codigo)
+	CONSTRAINT pk_usuarios_nid PRIMARY KEY(nid)
 );
 
 --- CREAR LA TABLA DE LOGS

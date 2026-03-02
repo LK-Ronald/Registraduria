@@ -16,7 +16,7 @@ public interface PersonaRepository {
 
     public abstract List<Persona> listar() throws AccesoDatosEx;
 
-    public abstract void crear(String nombreDB, String rutaScript) throws AccesoDatosEx;
+    public abstract void crear() throws AccesoDatosEx;
 
     public abstract void borrar(long nid) throws AccesoDatosEx;
 }

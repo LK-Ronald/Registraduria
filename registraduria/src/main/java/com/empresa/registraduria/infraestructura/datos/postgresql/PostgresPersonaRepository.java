@@ -6,167 +6,172 @@ import com.empresa.registraduria.dominio.exepciones.*;
 import com.empresa.registraduria.dominio.modelo.Persona;
 import com.empresa.registraduria.infraestructura.datos.PersonaRepository;
 import com.empresa.registraduria.util.*;
-import java.sql.*;
+import jakarta.persistence.*;
 
 public class PostgresPersonaRepository implements PersonaRepository {
 
-    private final String nombreDB = "acceso.tb_usuarios";
+    private final static EntityManagerFactory emf = Persistence.createEntityManagerFactory("MiEmpresa");
 
     @Override
     public boolean existe(long nid) throws AccesoDatosEx {
-        String url = "jdbc:postgresql://localhost:5432/empresa";
-        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
+        if (nid < 0) {
+            throw new AccesoDatosEx("El numero de identificacion no es valido");
+        }
+
+        EntityManager em = emf.createEntityManager();
         boolean existe = false;
 
-        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
+        try {
 
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
+            em.getTransaction().begin();
+            Persona p = em.find(Persona.class, nid);
+            em.getTransaction().commit();
 
-            pst.setLong(1, nid);
-            try (ResultSet rs = pst.executeQuery()) {
-                existe = rs.next();
+            if (p != null && p.isActivo()) {
+                existe = true;
             }
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            em.getTransaction().rollback();
+            e.printStackTrace();
+
+        } finally {
+            em.close();
         }
+
         return existe;
     }
 
     @Override
     public void agregar(Persona persona) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        if (persona == null) {
+            throw new EscrituraDatosEx("La persona no puede ser nulla");
+        }
 
-        String sql = "INSERT INTO " + nombreDB
-                + " (nid, nombre, apellido, correo, clave, fecha_regis, fecha_naci) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        EntityManager em = emf.createEntityManager();
 
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-
-            pst.setLong(1, persona.getNid());
-            pst.setString(2, persona.getNombre());
-            pst.setString(3, persona.getApellido());
-            pst.setString(4, persona.getCorreo());
-            pst.setString(5, persona.getClave());
-            pst.setTimestamp(6, FechaActu.getFechaTiempo());
-            pst.setDate(7, FechaActu.valueOf(persona.getAnoNacimiento()));
-
-            int insertRow = pst.executeUpdate();
-            System.out.println("Se insertaron: " + insertRow + " filas");
-
+        try {
+            em.getTransaction().begin();
+            em.persist(persona);
+            em.getTransaction().commit();
+            System.out.println("Persona agregada correctamente");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
         }
     }
 
     @Override
     public void actualizarClave(long nid, String nuevaClave) throws EscrituraDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        if (nid < 0) {
+            throw new EscrituraDatosEx("El numero de identificacion no es valido");
+        }
 
-        String sql = "UPDATE " + nombreDB + " SET clave = ? WHERE nid = ? AND activo = true";
+        if (nuevaClave == null || nuevaClave.isEmpty()) {
+            throw new EscrituraDatosEx("La nueva clave no puede ser null o vacia");
+        }
 
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
+        EntityManager em = emf.createEntityManager();
 
-            pst.setString(1, HashPassword.hashpw(nuevaClave));
-            pst.setLong(2, nid);
-
-            int updateRow = pst.executeUpdate();
-
-            if (updateRow == 0) {
-                System.out.println("El numero de identificacion no es valido");
+        try {
+            em.getTransaction().begin();
+            Persona p = em.find(Persona.class, nid);
+            if (p != null && p.isActivo()) {
+                p.setClave(HashPassword.hashpw(nuevaClave));
+                em.merge(p);
             } else {
-                System.out.println("Se actualizaron: " + updateRow + " filas");
+                throw new EscrituraDatosEx("No se encontro la persona con el numero de identificacion " + nid);
             }
+            em.getTransaction().commit();
+            System.out.println("Clave actualizada correctamente");
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
         }
     }
 
     @Override
     public Persona buscar(long nid) throws AccesoDatosEx {
-        Persona persona = null;
-        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
-
-        String sql = "SELECT * FROM " + nombreDB + " WHERE nid = ? AND activo = true";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-
-            pst.setLong(1, nid);
-            try (ResultSet rs = pst.executeQuery()) {
-                while (rs.next()) {
-                    persona = new Persona(rs.getLong("nid"), rs.getString("nombre"), rs.getString("apellido"),
-                            rs.getString("correo"), rs.getString("clave"), FechaActu.valueOf(rs.getDate("fecha_naci")));
-                }
-            }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        if (nid < 0) {
+            throw new AccesoDatosEx("El numero de identificacion no es valido");
         }
+        Persona persona = null;
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            em.getTransaction().begin();
+            persona = em.find(Persona.class, nid);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+
         return persona;
     }
 
     @Override
     public List<Persona> listar() throws AccesoDatosEx {
         List<Persona> personas = new ArrayList<>();
-        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        EntityManager em = emf.createEntityManager();
 
-        String sql = "SELECT * FROM " + nombreDB + " WHERE activo = true";
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql);
-                ResultSet rs = pst.executeQuery()) {
-
-            while (rs.next()) {
-                personas.add(new Persona(rs.getLong("nid"), rs.getString("nombre"), rs.getString("apellido"),
-                        rs.getString("correo"), rs.getString("clave"), FechaActu.valueOf(rs.getDate("fecha_naci"))));
-            }
+        try {
+            em.getTransaction().begin();
+            personas = em.createQuery("SELECT p FROM Persona p WHERE p.activo = true", Persona.class)
+                    .getResultList();
+            em.getTransaction().commit();
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
         }
         return personas;
     }
 
     @Override
-    public void crear(String nombreDB, String rutaScript) throws AccesoDatosEx {
-        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+    public void crear() throws AccesoDatosEx {
 
-        String sql = CargarQuery.cargarQuery(rutaScript);
-
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
-            pst.execute();
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+        System.out.println("Base de datos creada correctamente");
     }
 
     @Override
     public void borrar(long nid) throws AccesoDatosEx {
+        if (nid < 0) {
+            throw new EscrituraDatosEx("El numero de identificacion no es valido");
+        }
 
-        CargarConfig cg = new CargarConfig("registraduria/config/postgresql.properties");
-        String url = "jdbc:postgresql://localhost:5432/empresa";
+        EntityManager em = emf.createEntityManager();
 
-        String sql = "UPDATE " + nombreDB + " SET activo = false WHERE nid = ?";
+        try {
+            em.getTransaction().begin();
 
-        try (Connection conn = DriverManager.getConnection(url, cg.cargarProperties());
-                PreparedStatement pst = conn.prepareStatement(sql)) {
+            Persona p = em.find(Persona.class, nid);
 
-            pst.setLong(1, nid);
-            pst.execute();
+            if (p != null && p.isActivo()) {
+                p.setActivo(false);
+                em.merge(p);
+            } else {
+                throw new EscrituraDatosEx("No se encontro la persona con el numero de identificacion " + nid);
+            }
+
+            em.getTransaction().commit();
+
+            System.out.println("Persona eliminada correctamente");
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
         }
     }
 
