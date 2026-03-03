@@ -12,14 +12,14 @@
             <!-- Bases de datos --> 
             <property name="jakarta.persistence.jdbc.url"
                 value="jdbc:postgresql://localhost:5432/empresa" />
-            <property name="jakarta.persistence.jdbc.user" value="postgres" />
-            <property name="jakarta.persistence.jdbc.password" value="2007" />
+            <property name="jakarta.persistence.jdbc.user" value="USER" />
+            <property name="jakarta.persistence.jdbc.password" value="PASSWORD" />
 
             
             <!-- <property name="jakarta.persistence.jdbc.url"
                 value="jdbc:mysql://localhost:3306/empresa" />
-            <property name="jakarta.persistence.jdbc.user" value="root" />
-            <property name="jakarta.persistence.jdbc.password" value="root" />
+            <property name="jakarta.persistence.jdbc.user" value="USER" />
+            <property name="jakarta.persistence.jdbc.password" value="PASSWORD" />
         -->
 
             <property name="hibernate.hbm2ddl.auto" value="update" />
