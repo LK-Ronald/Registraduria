@@ -17,4 +17,6 @@ public interface IRegistroPersonas {
     public abstract void crear();
 
     public abstract void borrar(long nid);
+
+    public abstract void actualizarCorreo(long nid, String correo);
 }
