@@ -31,16 +31,44 @@ El proyecto sigue una estructura de capas para garantizar el desacoplamiento y l
 - Contar con una instancia de MySQL o PostgreSQL activa.
 
 ### 2. Configuración de la Base de Datos
-El sistema utiliza el archivo `src/main/resources/META-INF/persistence.xml` para gestionar la conexión.
+El sistema utiliza el archivo `src/main/resources/META-INF/persistence.xml` para gestionar la conexión. Este archivo centraliza la configuración del proveedor (Hibernate) y las fuentes de datos.
 
-#### Para usar PostgreSQL (Configuración por defecto en el código):
-1. Asegúrate de que el archivo `persistence.xml` tenga activa la sección de PostgreSQL.
-2. Ejecuta el script de inicialización: `src/main/java/com/empresa/registraduria/infraestructura/datos/postgresql/db_scripts/ScriptPostgres.sql`.
+#### Estructura del `persistence.xml`
+Debes configurar tus credenciales en las propiedades correspondientes. A continuación se muestra una plantilla del archivo:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+    <persistence-unit name="MiEmpresa" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>com.empresa.registraduria.dominio.modelo.Persona</class>
+
+        <properties>
+            <!-- URL de la base de datos (Ejemplo para PostgreSQL o MySQL) -->
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/tu_base_de_datos" />
+            
+            <!-- CONFIGURACIÓN DE CREDENCIALES (Cambia estos valores) -->
+            <property name="jakarta.persistence.jdbc.user" value="TU_USUARIO" />
+            <property name="jakarta.persistence.jdbc.password" value="TU_CONTRASEÑA" />
+
+            <!-- Configuración de Hibernate -->
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <property name="hibernate.show_sql" value="false" />
+            <property name="hibernate.format_sql" value="false" />
+        </properties>
+    </persistence-unit>
+</persistence>
+```
+
+#### Para usar PostgreSQL (Configuración sugerida):
+1. Asegúrate de tener el driver de PostgreSQL activo en tu `pom.xml`.
+2. En `persistence.xml`, coloca el host, puerto y nombre de tu base de datos en la propiedad `jdbc.url`.
+3. Coloca tu **usuario** y **contraseña** en las propiedades indicadas arriba.
 
 #### Para usar MySQL:
-1. Cambia la configuración en `persistence.xml` para apuntar al driver y URL de MySQL.
-2. Ejecuta el script de inicialización: `src/main/java/com/empresa/registraduria/infraestructura/datos/mysql/scripts/ScriptMysql.sql`.
-3. En la clase `Main.java`, asegúrate de instanciar `MysqlPersonaRepository`.
+1. Cambia la `jdbc.url` por: `jdbc:mysql://localhost:3306/tu_base_de_datos`.
+2. Actualiza tu **usuario** y **contraseña**.
+3. Asegúrate de que `MysqlPersonaRepository` esté siendo utilizado en la clase `Main.java`.
 
 > [!IMPORTANT]
 > Gracias a Hibernate (`hibernate.hbm2ddl.auto = update`), las tablas se crearán o actualizarán automáticamente al iniciar la aplicación si la base de datos ya existe.
