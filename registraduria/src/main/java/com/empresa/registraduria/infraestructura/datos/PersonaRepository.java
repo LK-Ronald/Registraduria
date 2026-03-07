@@ -19,4 +19,6 @@ public interface PersonaRepository {
     public abstract void crear() throws AccesoDatosEx;
 
     public abstract void borrar(long nid) throws AccesoDatosEx;
+
+    public abstract void actualizarCorreo(long nid, String correo) throws AccesoDatosEx;
 }

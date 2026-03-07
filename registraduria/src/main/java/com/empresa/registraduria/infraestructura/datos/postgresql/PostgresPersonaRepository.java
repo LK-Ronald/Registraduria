@@ -175,4 +175,39 @@ public class PostgresPersonaRepository implements PersonaRepository {
         }
     }
 
+    @Override
+    public void actualizarCorreo(long nid, String correo) throws AccesoDatosEx {
+        if (nid <= 0) {
+            throw new AccesoDatosEx("El numero de identificacion no es valido");
+        }
+
+        if (correo.isEmpty()) {
+            throw new AccesoDatosEx("El correo ingrsado no es valido");
+        }
+
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            em.getTransaction().begin();
+            Persona p = em.find(Persona.class, nid);
+
+            if (correo.equalsIgnoreCase(p.getCorreo())) {
+                em.getTransaction().commit();
+                throw new AccesoDatosEx("Ingresa un correo diferente");
+            }
+
+            if (p != null) {
+                p.setCorreo(correo);
+                em.merge(p);
+            }
+
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+    }
+
 }

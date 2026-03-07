@@ -93,4 +93,14 @@ public class RegistroPersonasImpl implements IRegistroPersonas {
         }
     }
 
+    @Override
+    public void actualizarCorreo(long nid, String correo) {
+
+        try {
+            accesoDatos.actualizarCorreo(nid, correo);
+        } catch (AccesoDatosEx e) {
+            System.out.println("Error con los datos ingresados");
+        }
+    }
+
 }

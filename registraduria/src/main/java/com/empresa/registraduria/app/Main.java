@@ -16,7 +16,7 @@ public class Main {
         //RegistroPersonasImpl rp = new RegistroPersonasImpl(new MysqlPersonaRepository()); 
         int opcion = 0;
 
-        while (opcion != 8) {
+        while (opcion != 9) {
             System.out.println("--------Menu--------");
             System.out.println("1. Crear base de datos");
             System.out.println("2. Agregar persona");
@@ -25,7 +25,8 @@ public class Main {
             System.out.println("5. Borrar persona");
             System.out.println("6. Actualizar clave");
             System.out.println("7. Existe persona");
-            System.out.println("8. Salir");
+            System.out.println("8. Actualizar correo");
+            System.out.println("9. Salir");
             System.out.print("Ingrese una opcion: ");
             opcion = sc.nextInt();
 
@@ -111,6 +112,19 @@ public class Main {
                     break;
 
                 case 8:
+                    System.out.println("Actualizar correo");
+                    System.out.print("Ingresa el nid: ");
+                    long personNid = sc.nextLong();
+                    sc.nextLine();
+
+                    System.out.print("Ingresa el nuevo correo: ");
+                    String newCorreo = sc.next();
+                    sc.nextLine();
+
+                    rp.actualizarCorreo(personNid, newCorreo);
+
+                    break;
+                case 9:
                     System.out.println("Saliendo...");
                     break;
                 default:
